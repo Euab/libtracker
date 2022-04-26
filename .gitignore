@@ -1,0 +1,10 @@
+*.idea
+*.DS_Store
+
+*config.json
+
+/venv
+/libtracker.egg-info
+/build
+/dist
+*/__pycache__
