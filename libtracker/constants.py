@@ -9,3 +9,7 @@ ATTR_ENTITY_ID = "entity_id"
 EVENT_STATE_CHANGED = "state_changed"
 EVENT_DEVICE_ADDED = "device_added"
 EVENT_DEVICE_REMOVED = "device_removed"
+
+DEFAULT_CONFIG_PATH = "config.json"
+CONFIG_DIRNAME = ".libtracker"
+

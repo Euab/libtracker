@@ -1,16 +1,18 @@
 from libtracker.libtracker import Bus, StateMachine, load_config
 from libtracker import zone
-
-DEFAULT_CONFIG_PATH = "config.json"
+from libtracker.config import ensure_config
 
 
 def start():
+    # Ensure config file exists and load in config
+    config_path = ensure_config()
+
     # Instantiate bus and state machine
     bus = Bus()
     sm = StateMachine(bus)
 
     # Load config
-    config = load_config(DEFAULT_CONFIG_PATH)
+    config = load_config(config_path)
 
     # Define the home zone
     zone.setup_home_zone(sm, config)
