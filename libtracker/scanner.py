@@ -48,8 +48,12 @@ class ICloudDeviceScanner:
         self.add_devices()
 
         while self.running:
-            self.update("GusFring")  # this is the hostname of my phone lmao
-            sleep(DEFAULT_SCAN_INTERVAL)
+            try:
+                self.update("GusFring")  # this is the hostname of my phone lmao
+                sleep(DEFAULT_SCAN_INTERVAL)
+            except KeyboardInterrupt:
+                print("Ctrl-C detected: Stopping libtracker gracefully.")
+                self.running = False
 
     def do_icloud_2fa(self):
         devices = self.api.trusted_devices
