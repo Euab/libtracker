@@ -2,6 +2,7 @@ import click
 from pyicloud import PyiCloudService
 from pyicloud.exceptions import PyiCloudNoDevicesException
 from time import sleep
+from datetime import datetime
 
 from libtracker.constants import (
     ATTR_LATITUDE,
@@ -87,10 +88,6 @@ class ICloudDeviceScanner:
         zone_state_lat = h_zone.attrs[ATTR_LATITUDE]
         zone_state_lon = h_zone.attrs[ATTR_LONGITUDE]
 
-        print("Phone: {}{}\nHome: {}{}".format(
-            latitude, longitude, zone_state_lat, zone_state_lon
-        ))
-
         distance = inverse_vincenty(
             (float(latitude), float(longitude)),
             (float(zone_state_lat), float(zone_state_lon))
@@ -100,8 +97,11 @@ class ICloudDeviceScanner:
 
     def update(self, device_name):
         try:
+            print(f"Time is: {datetime.utcnow().isoformat()}")
             for device in self.api.devices:
+                print(f"Updating location for: {str(device)}")
                 if str(device) != str(self.devices[device_name]):
+                    print("\t- Not updating")
                     continue
 
                 status = device.status(DEVICE_STATUS_SET)
@@ -112,6 +112,8 @@ class ICloudDeviceScanner:
                 if location:
                     distance = self.determine_distance(device_name, location[ATTR_LATITUDE],
                                                        location[ATTR_LONGITUDE], battery)
+                    print(f"\t- Device is {distance}km from home")
+                    print(f"\t- Latitude: {location[ATTR_LATITUDE]}. Longitude: {location[ATTR_LONGITUDE]}")
 
                     # Check if the device is home
                     h_zone = self._sm.get("zone.home")
@@ -122,12 +124,13 @@ class ICloudDeviceScanner:
                         h_zone.attrs[ATTR_RADIUS]
                     )
                     if is_home:
-                        print("Device is home")
+                        print("\t- Device is home")
                     else:
-                        print("Not home")
+                        print("\t- Not home")
 
                     # Mark the device as seen
                     self.seen_devices[device_name] = True
+                print("\n")
 
         except PyiCloudNoDevicesException:
             print("No devices found.")
