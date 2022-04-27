@@ -1,13 +1,14 @@
 import math
 
 from libtracker.entity import Zone
+from libtracker.constants import ATTR_LATITUDE, ATTR_LONGITUDE, ATTR_RADIUS
 
 ENTITY_ID_HOME = "home"
 
 STATE_HOME = "home"
 STATE_AWAY = "away"
 
-DEFAULT_ZONE_RADIUS = 100  # m
+DEFAULT_ZONE_RADIUS = 7  # m
 
 VINCENTY_CONVERGENCE_THRESHOLD = 1e-12
 VINCENTY_MAX_ITERATIONS = 200
@@ -15,20 +16,21 @@ VINCENTY_MAX_ITERATIONS = 200
 EARTH_SEMI_MAJOR_AXIS = 6378137.0
 EARTH_SEMI_MINOR_AXIS = 6356752.314245
 
-_TEST_THETA_1 = (51.507351, -0.127758)  # London, UK.
-_TEST_THETA_2 = (40.713051, -74.007233)  # New York, NY, USA.
-
-
-def _test_inverse_vincenty():
-    result = inverse_vincenty(_TEST_THETA_1, _TEST_THETA_2)
-    assert result == 5585.301859
-
 
 def setup_home_zone(sm, config):
     h_zone = Zone(sm, config["home_name"], config["latitude"], config["longitude"],
                   DEFAULT_ZONE_RADIUS, False)
-    h_zone.entity_id = "zone." + config["home_name"]
+    h_zone.entity_id = "zone.home"
     h_zone.push_state()
+
+
+def in_zone(zone, latitude, longitude, radius=0):
+    zone_distance = inverse_vincenty(
+        (float(zone.attrs[ATTR_LATITUDE]), float(zone.attrs[ATTR_LONGITUDE])),
+        (float(latitude), float(longitude))
+    ) * 1000  # km -> m
+
+    return zone_distance - radius < zone.attrs[ATTR_RADIUS]
 
 
 def inverse_vincenty(theta_1, theta_2):
@@ -116,6 +118,3 @@ def inverse_vincenty(theta_1, theta_2):
     s /= 1000  # m -> km
 
     return round(s, 6)
-
-
-_test_inverse_vincenty()

@@ -13,7 +13,7 @@ class Bus:
         else:
             self._subscribers[event_type] = [callback]
 
-    def post(self, event_type, event_data):
+    def post(self, event_type, event_data=None):
         if event_type in self._subscribers:
             for callback in self._subscribers[event_type]:
                 callback(event_data)
@@ -71,30 +71,3 @@ class StateMachine:
                 "new_state": state
             }
         )
-
-
-def load_config(fp):
-    try:
-        with open(fp, 'r') as f:
-            config = json.load(f)
-    except IOError:
-        print("Could not load config file. Exiting program.")
-        exit(1)
-
-    return config
-
-
-def test_callback(name):
-    print("This is a callback test " + name)
-
-
-def test_run():
-    events = Bus()
-    sm = StateMachine(events)
-    events.subscribe("event_device_found", test_callback)
-    events.post("event_device_found", "test event data")
-    sm.set("device.iphone", "home", {"data": "test"})
-    print(sm.get("device.iphone").to_dict())
-
-
-test_run()

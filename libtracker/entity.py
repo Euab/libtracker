@@ -4,6 +4,7 @@ from collections import defaultdict
 from libtracker.constants import (
     ATTR_LATITUDE,
     ATTR_LONGITUDE,
+    ATTR_RADIUS,
     ATTR_SILENT
 )
 
@@ -63,14 +64,11 @@ class Zone(Entity):
     def state_attrs(self):
         attrs = {
             ATTR_LATITUDE: self._latitude,
-            ATTR_LONGITUDE: self._longitude
+            ATTR_LONGITUDE: self._longitude,
+            ATTR_RADIUS: self._radius
         }
 
         if self._silent:
             attrs[ATTR_SILENT] = self._silent
 
         return attrs
-
-
-class Trackable(Entity):
-    pass

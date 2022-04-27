@@ -15,11 +15,17 @@ CONFIG_DEFAULTS = {
 }
 
 
-def ensure_config():
+def resolve_config(config_path):
     app_data = os.getenv("APPDATA") if os.name == 'nt' \
         else os.path.expanduser("~")
     config_dir = os.path.join(app_data, CONFIG_DIRNAME)
-    config_path = os.path.join(config_dir, DEFAULT_CONFIG_PATH)
+    config_path = os.path.join(config_dir, config_path)
+
+    return config_dir, config_path
+
+
+def ensure_config():
+    config_dir, config_path = resolve_config(DEFAULT_CONFIG_PATH)
 
     if os.path.exists(config_path):
         # Config exists.
@@ -33,6 +39,15 @@ def ensure_config():
 
     try:
         generate_config_defaults(config_path)
+        choice = input("Do you want to configure libtracker now? [Y/n] >>> ")
+        if choice.lower() == 'n':
+            return config_path
+        do_config_flow("Configure libtracker longitude and latitude",
+                       fields={"latitude": "Enter latitude", "longitude": "Enter longitude",
+                               "home_name": "Enter the name for your home",
+                               "apple_username": "Enter your AppleID email",
+                               "apple_password": "enter your AppleID password"},
+                       fp=config_path)
     except (OSError, IOError):
         print(f"Could not create a config file at {config_path} try creating "
               f"one manually. Go to https://github.com/Euab/libtracker/blob/main/README.md "
@@ -47,3 +62,31 @@ def generate_config_defaults(config_path):
             json.dump(CONFIG_DEFAULTS, f)
     except:
         raise
+
+
+def load_config(fp):
+    try:
+        with open(fp, 'r') as f:
+            config = json.load(f)
+    except IOError:
+        print("Could not load config file. Exiting program.")
+        exit(1)
+
+    return config
+
+
+def do_config_flow(description, fields, fp):
+    """
+    Execute a config flow. The config is stored at fp
+    """
+    if fields is None:
+        fields = {}
+
+    config = {}
+    print(description)
+    for k, v in fields.items():
+        f_input = input(f'{v}: >>> ')
+        config[k] = f_input
+
+    with open(fp, 'w+') as f:
+        json.dump(config, f)

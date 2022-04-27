@@ -1,6 +1,7 @@
-from libtracker.libtracker import Bus, StateMachine, load_config
+from libtracker.libtracker import Bus, StateMachine
 from libtracker import zone
-from libtracker.config import ensure_config
+from libtracker.config import ensure_config, load_config
+from libtracker.scanner import ICloudDeviceScanner
 
 
 def start():
@@ -16,7 +17,11 @@ def start():
 
     # Define the home zone
     zone.setup_home_zone(sm, config)
-    print(sm.get("zone.home").to_dict())
+
+    try:
+        scanner = ICloudDeviceScanner(bus, sm, config)
+    except Exception as e:
+        print(f"Failed to initialise icloud scanner: {e}")
 
 
 if __name__ == "__main__":
