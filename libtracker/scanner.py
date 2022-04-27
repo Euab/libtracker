@@ -12,6 +12,7 @@ from libtracker.constants import (
     CONFIG_APPLE_ID_PASSWORD
 )
 from libtracker.zone import inverse_vincenty, in_zone
+from libtracker.notify import send_notification
 
 DEFAULT_SCAN_INTERVAL = 15
 
@@ -39,6 +40,7 @@ class ICloudDeviceScanner:
         self.api = PyiCloudService(self.__username, self.__password)
         self.devices = {}
         self.seen_devices = {}
+        self._notified = {}
 
         self.running = False
 
@@ -49,7 +51,11 @@ class ICloudDeviceScanner:
 
         while self.running:
             try:
-                self.update("GusFring")  # this is the hostname of my phone lmao
+                print(f"Time is: {datetime.utcnow().isoformat()}")
+                #self.update("GusFring")  # this is the hostname of my phone lmao
+                for device in self.devices:
+                    self.update(device)
+                print("\n")
                 sleep(DEFAULT_SCAN_INTERVAL)
             except KeyboardInterrupt:
                 print("Ctrl-C detected: Stopping libtracker gracefully.")
@@ -84,6 +90,7 @@ class ICloudDeviceScanner:
             status = device.status(DEVICE_STATUS_SET)
             devicename = status["name"].replace(' ', '', 99)
             self.devices[devicename] = device
+            self._notified[devicename] = False
             self.running = True
 
     def determine_distance(self, devicename, latitude, longitude, battery):
@@ -101,11 +108,9 @@ class ICloudDeviceScanner:
 
     def update(self, device_name):
         try:
-            print(f"Time is: {datetime.utcnow().isoformat()}")
+            print(f"Updating location for: {device_name}")
             for device in self.api.devices:
-                print(f"Updating location for: {str(device)}")
                 if str(device) != str(self.devices[device_name]):
-                    print("\t- Not updating")
                     continue
 
                 status = device.status(DEVICE_STATUS_SET)
@@ -129,12 +134,15 @@ class ICloudDeviceScanner:
                     )
                     if is_home:
                         print("\t- Device is home")
+                        if not self._notified[device_name]:
+                            send_notification(device_name, self.config)
+                        self._notified[device_name] = True
                     else:
                         print("\t- Not home")
+                        self._notified[device_name] = False
 
                     # Mark the device as seen
                     self.seen_devices[device_name] = True
-                print("\n")
 
         except PyiCloudNoDevicesException:
             print("No devices found.")

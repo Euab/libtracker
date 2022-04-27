@@ -18,10 +18,7 @@ def start():
     # Define the home zone
     zone.setup_home_zone(sm, config)
 
-    try:
-        scanner = ICloudDeviceScanner(bus, sm, config)
-    except Exception as e:
-        print(f"Failed to initialise icloud scanner: {e}")
+    scanner = ICloudDeviceScanner(bus, sm, config)
 
 
 if __name__ == "__main__":
