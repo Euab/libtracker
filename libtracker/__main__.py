@@ -1,29 +1,60 @@
 import threading
+from concurrent.futures import ThreadPoolExecutor
 
-from state import StateMachine
-from config import ensure_config, load_config
+from libtracker.state import StateMachine
+from libtracker.config import ensure_config, load_config
 
 from libtracker.scanner import ICloudDeviceScanner
-import zone
+from libtracker import zone
+
+SUPPORTED_SCANNER_TYPES = ("icloud", "ios")
+
+SCANNER_MAP = {
+    "ios": ICloudDeviceScanner,
+    "icloud": ICloudDeviceScanner
+}
 
 
-def start():
-    # Ensure config file exists and load in config
-    config_path = ensure_config()
+class LibtrackerRunner:
+    """
+    Root class of Libtracker
+    """
 
-    # Instantiate state machine
-    sm = StateMachine()
+    running_scanners = []
+    _pool = None
 
-    # Load config
-    config = load_config(config_path)
+    def __init__(self, config=None, scanners=None):
+        self.states = StateMachine()
+        self.config = None
+        self.scanners = scanners or []
 
-    # Define the home zone
-    zone.setup_home_zone(sm, config)
+    def start(self):
+        if self.config is None:
+            config_path = ensure_config()
+            self.config = load_config(config_path)
 
-    scanner = ICloudDeviceScanner(sm, config)
-    t = threading.Thread(target=scanner.start())
-    t.start()
+        zone.setup_home_zone(self.states, self.config)
+
+        if not self.scanners:
+            raise RuntimeError("Scanners must contain a scanner.")
+        if not isinstance(self.scanners, list):
+            self.scanners = [self.scanners]
+
+        for scanner in self.scanners:
+            print(scanner)
+            if (scanner := scanner.lower()) in SUPPORTED_SCANNER_TYPES:
+                scanner = SCANNER_MAP[scanner](self.states, self.config)
+                self.running_scanners.append(scanner)
+
+        print(self.running_scanners)
+
+        if self.running_scanners:
+            self._pool = ThreadPoolExecutor(len(self.running_scanners))
+
+            for scanner in self.running_scanners:
+                result = self._pool.submit(scanner.start)
 
 
 if __name__ == "__main__":
-    start()
+    runner = LibtrackerRunner(scanners="icloud")
+    runner.start()
