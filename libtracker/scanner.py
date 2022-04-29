@@ -60,11 +60,8 @@ class ICloudDeviceScanner:
         :return: None
         """
         while self.running:
-            print(f"Time is f: {datetime.utcnow().isoformat()}")
-            print(self.devices)
             for device in self.devices:
                 self.update(self.devices[device])
-            print("\n")
             sleep(DEFAULT_SCAN_INTERVAL)
 
             if self._first_iter:
@@ -116,7 +113,6 @@ class ICloudDeviceScanner:
 
     def update(self, device_o):
         try:
-            print(f"Updating location for: {device_o.device}")
             for device in self.api.devices:
                 if str(device) != str(device_o.device):
                     continue

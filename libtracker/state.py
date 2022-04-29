@@ -42,4 +42,3 @@ class StateMachine:
         )
 
         self._states[entity_id] = state
-        print(f"new state: {entity_id} {new_state} {attrs}")
