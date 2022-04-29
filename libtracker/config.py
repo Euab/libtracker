@@ -42,7 +42,7 @@ def ensure_config():
         choice = input("Do you want to configure libtracker now? [Y/n] >>> ")
         if choice.lower() == 'n':
             return config_path
-        do_config_flow("Configure libtracker longitude and latitude",
+        do_config_flow("Configure libtracker for first time use.",
                        fields={"latitude": "Enter latitude", "longitude": "Enter longitude",
                                "home_name": "Enter the name for your home",
                                "apple_username": "Enter your AppleID email",
@@ -50,8 +50,7 @@ def ensure_config():
                        fp=config_path)
     except (OSError, IOError):
         print(f"Could not create a config file at {config_path} try creating "
-              f"one manually. Go to https://github.com/Euab/libtracker/blob/main/README.md "
-              f"for more information.")
+              "one manually.")
 
     return config_path
 

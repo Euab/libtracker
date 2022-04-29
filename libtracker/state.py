@@ -1,24 +1,3 @@
-import json
-
-from libtracker.constants import EVENT_STATE_CHANGED, ATTR_ENTITY_ID
-
-
-class Bus:
-    def __init__(self):
-        self._subscribers = {}
-
-    def subscribe(self, event_type, callback):
-        if event_type in self._subscribers:
-            self._subscribers[event_type].append(callback)
-        else:
-            self._subscribers[event_type] = [callback]
-
-    def post(self, event_type, event_data=None):
-        if event_type in self._subscribers:
-            for callback in self._subscribers[event_type]:
-                callback(event_data)
-
-
 class State:
     """
     Representation of a state inside the state machine.
@@ -46,9 +25,8 @@ class State:
 
 
 class StateMachine:
-    def __init__(self, bus):
+    def __init__(self):
         self._states = {}
-        self._bus = bus
 
     def get(self, entity_id):
         return self._states.get(entity_id)
@@ -64,10 +42,4 @@ class StateMachine:
         )
 
         self._states[entity_id] = state
-        self._bus.post(
-            EVENT_STATE_CHANGED,
-            {
-                ATTR_ENTITY_ID: entity_id,
-                "new_state": state
-            }
-        )
+        print(f"new state: {entity_id} {new_state} {attrs}")

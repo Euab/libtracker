@@ -1,15 +1,6 @@
 from abc import ABC
 from collections import defaultdict
 
-from libtracker.constants import (
-    ATTR_LATITUDE,
-    ATTR_LONGITUDE,
-    ATTR_RADIUS,
-    ATTR_SILENT
-)
-
-AREA_STATE = "zoning"  # Area is only in one state which is that it exists.
-
 
 class Entity(ABC):
     @property
@@ -40,35 +31,4 @@ class Entity(ABC):
         attrs = self.state_attrs or {}
 
         attrs.update(defaultdict(dict).get(self.entity_id, {}))
-        return self.sm.set(self.entity_id, state, attrs)
-
-
-class Zone(Entity):
-    def __init__(self, sm, name, latitude, longitude, radius, silent):
-        self.sm = sm
-        self._name = name
-        self._latitude = latitude
-        self._longitude = longitude
-        self._radius = radius
-        self._silent = silent
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def state(self):
-        return AREA_STATE
-
-    @property
-    def state_attrs(self):
-        attrs = {
-            ATTR_LATITUDE: self._latitude,
-            ATTR_LONGITUDE: self._longitude,
-            ATTR_RADIUS: self._radius
-        }
-
-        if self._silent:
-            attrs[ATTR_SILENT] = self._silent
-
-        return attrs
+        self.sm.set(self.entity_id, state, attrs)

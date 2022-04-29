@@ -1,14 +1,14 @@
 import math
 
-from libtracker.entity import Zone
+from libtracker.entity import Entity
 from libtracker.constants import ATTR_LATITUDE, ATTR_LONGITUDE, ATTR_RADIUS
 
-ENTITY_ID_HOME = "home"
+ZONE_STATE = "zoning"
 
 STATE_HOME = "home"
 STATE_AWAY = "away"
 
-DEFAULT_ZONE_RADIUS = 15  # m
+DEFAULT_ZONE_RADIUS = 20  # m
 
 VINCENTY_CONVERGENCE_THRESHOLD = 1e-12
 VINCENTY_MAX_ITERATIONS = 200
@@ -18,8 +18,8 @@ EARTH_SEMI_MINOR_AXIS = 6356752.314245
 
 
 def setup_home_zone(sm, config):
-    h_zone = Zone(sm, config["home_name"], config["latitude"], config["longitude"],
-                  DEFAULT_ZONE_RADIUS, False)
+    h_zone = Zone(sm, config["home_name"], config[ATTR_LATITUDE],
+                  config[ATTR_LONGITUDE], DEFAULT_ZONE_RADIUS)
     h_zone.entity_id = "zone.home"
     h_zone.push_state()
 
@@ -118,3 +118,31 @@ def inverse_vincenty(theta_1, theta_2):
     s /= 1000  # m -> km
 
     return round(s, 6)
+
+
+class Zone(Entity):
+    def __init__(self, sm, name, latitude, longitude, radius):
+        self.sm = sm
+        self._name = name
+        self.entity_id = name
+        self._latitude = latitude
+        self._longitude = longitude
+        self._radius = radius
+
+    @property
+    def name(self):
+        return self._name
+
+    @property
+    def state(self):
+        return ZONE_STATE
+
+    @property
+    def state_attrs(self):
+        attrs = {
+            ATTR_LATITUDE: self._latitude,
+            ATTR_LONGITUDE: self._longitude,
+            ATTR_RADIUS: self._radius
+        }
+
+        return attrs
