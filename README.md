@@ -14,12 +14,14 @@ Pip install:
 $ python3 -m pip install git+https://github.com/Euab/libtracker.git#egg=libtracker
 ```
 
-The config file is currently located in the same directory as where the Python package is installed, in future, this will be moved to the system's default configuration directory i.e. `APPDATA` or `~`.
+The config file is located at the system's user site. E.g. `APPDATA` or `~`.
 ```json
 {
   "latitude": 0,
   "longitude": 0,
-  "home_name": "Home"
+  "home_name": "Home",
+  "apple_username": "x@example.com",
+  "apple_password": "X"
 }
 ```
 

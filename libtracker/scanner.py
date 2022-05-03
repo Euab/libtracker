@@ -72,7 +72,7 @@ class ICloudDeviceScanner:
         print(devices)
         fmt_devices = []
         for i, device in enumerate(self.api.trusted_devices):
-            devices.append("{} {}".format(i, device.get(
+            fmt_devices.append("{} {}".format(i, device.get(
                 "deviceName", "SMS to {}".format(
                     device.get("phoneNumber")
                 )
@@ -117,15 +117,16 @@ class ICloudDeviceScanner:
                 if str(device) != str(device_o.device):
                     continue
 
+                print("Updating location for: " + str(device))
 
                 status = device.status(DEVICE_STATUS_SET)
                 location = status['location']
-                print(location)
                 battery = status.get('batteryLevel', 0) * 100
 
                 if location:
                     distance = self.determine_distance(location[ATTR_LATITUDE],
                                                        location[ATTR_LONGITUDE])
+                    print(f"Device is {str(distance)}km from home.")
 
                     gps = location[ATTR_LATITUDE], location[ATTR_LONGITUDE]
                     self.devices[device_o.name].mark_seen(device_o.name, "Test",

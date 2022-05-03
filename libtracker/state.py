@@ -31,6 +31,11 @@ class StateMachine:
     def get(self, entity_id):
         return self._states.get(entity_id)
 
+    def all(self):
+        return [
+            self._states[state].to_dict() for state in self._states
+        ]
+
     def set(self, entity_id, new_state, attrs):
         entity_id = entity_id.lower()
         attrs = attrs or {}

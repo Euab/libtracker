@@ -32,7 +32,8 @@ def ensure_config():
         return config_path
 
     try:
-        os.mkdir(config_dir)
+        if not os.path.isdir(config_dir):
+            os.mkdir(config_dir)
     except OSError:
         print("Could not create config directory. Try again or create one "
               f"manually at: {config_dir}")
