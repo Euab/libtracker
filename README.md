@@ -21,11 +21,73 @@ The config file is located at the system's user site. E.g. `APPDATA` or `~`.
   "longitude": 0,
   "home_name": "Home",
   "apple_username": "x@example.com",
-  "apple_password": "X"
+  "apple_password": "X",
+  "telegram_users": ["x"]
 }
 ```
 
+## Running as a script
 Run:
 ```bash
-$ python3 -m libtracker start
+$ python3 -m libtracker
+```
+
+## Running as a class
+Use the Libtracker runner class instead.
+
+Threaded example: Print all the states inside Libtracker every 20 seconds.
+```python
+import threading
+import time
+
+from libtracker import LibtrackerRunner
+
+
+lt = LibtrackerRunner(
+    scanners="icloud",
+    config={
+        "latitude": 0.00,
+        "longitude": 0.00,
+        "home_name": "My home",
+        "apple_username": "john.smith@apple.com",
+        "apple_password": "x",
+        "telegram_users": ["x"]
+    }
+)
+
+
+def fetch_states():
+    """
+    Loop that will fetch us a list of all the states from the state machine
+    every 20 seconds.
+    """
+
+    while True:
+        states = lt.states.all()
+        print(states)
+        time.sleep(20)
+
+        
+# Run Libtracker in another thread.
+t1 = threading.Thread(target=lt.start)
+t1.start()
+
+fetch_states()
+```
+
+```bash
+$ python3 test.py
+
+[{'entity_id': 'zone.home', 'state': 'zoning', 'attrs': {'latitude': 0.00, 'longitude': -0.00, 'radius': 100}}]
+Updating location for: MacBook Pro 13": Euab’s MacBook Pro
+Device is 0.017753km from home.
+Updating location for: iPhone 7 Plus: Euab's iPhone 7 Plus
+Updating location for: iPhone 12: Euab's iPhone 12
+Device is 0.026815km from home.
+Updating location for: MacBook Pro 13": Euab’s MacBook Pro
+Device is 0.017753km from home.
+Updating location for: iPhone 7 Euab's iPhone 7 Plus
+Updating location for: iPhone 12: Euab's iPhone 12
+Device is 0.026815km from home.
+[{'entity_id': 'zone.home', 'state': 'zoning', 'attrs': {'latitude': 0.00, 'longitude': -0.00, 'radius': 100}}, {'entity_id': 'device.euab’smacbookpro', 'state': 'home', 'attrs': {'latitude': 0.00, 'longitude': -0.00}}, {'entity_id': 'device.euab’siphone12', 'state': 'home', 'attrs': {'latitude': 0.00, 'longitude': -0.00}}]
 ```
