@@ -1,3 +1,4 @@
+import concurrent.futures
 from concurrent.futures import ThreadPoolExecutor
 from typing import Union
 
@@ -16,6 +17,7 @@ SCANNER_MAP = {
 }
 
 
+# noinspection PyShadowingNames
 class LibtrackerRunner:
     """
     Root class of Libtracker
@@ -58,6 +60,21 @@ class LibtrackerRunner:
             # Create a thread pool with num_threads = amount of scanners.
             self._pool = ThreadPoolExecutor(len(self.running_scanners))
 
+            futs = []
             for scanner in self.running_scanners:
                 # Start each scanner
                 result = self._pool.submit(scanner.start)
+                # Append the new future to an array
+                futs.append(result)
+
+            for fut in futs:
+                # Add the exception callback for each future
+                fut.add_done_callback(_scanner_exception_callback)
+
+
+def _scanner_exception_callback(future: concurrent.futures.Future) -> None:
+    """
+    Add a callback which allows exceptions coming from the any futures
+    set to be caught instead of the program failing quietly
+    """
+    print(future.result())
