@@ -7,8 +7,6 @@ from libtracker.config import ensure_config, load_config
 from libtracker.scanner import ICloudDeviceScanner
 from libtracker import zone
 
-SUPPORTED_SCANNER_TYPES = ("icloud", "ios")
-
 # Currently only have support for one scanner but more mappings can be
 # easily added here.
 SCANNER_MAP = {
@@ -52,7 +50,7 @@ class LibtrackerRunner:
         for scanner in self.scanners:
             # Map each chosen scanner to its scanner class and append to
             # the list of scanners we would like to run.
-            if (scanner := scanner.lower()) in SUPPORTED_SCANNER_TYPES:
+            if (scanner := scanner.lower()) in SCANNER_MAP.keys():
                 scanner = SCANNER_MAP[scanner](self.states, self.config)
                 self.running_scanners.append(scanner)
 
