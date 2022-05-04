@@ -15,7 +15,13 @@ CONFIG_DEFAULTS = {
 }
 
 
-def resolve_config(config_path):
+def resolve_config(config_path) -> tuple[str, str]:
+    """
+    Locate the configuration path according to what operating system Libtracker
+    is running on. The configuration is stored at the system's user site.
+    :param config_path: The path to the config
+    :return:
+    """
     app_data = os.getenv("APPDATA") if os.name == 'nt' \
         else os.path.expanduser("~")
     config_dir = os.path.join(app_data, CONFIG_DIRNAME)
@@ -24,7 +30,12 @@ def resolve_config(config_path):
     return config_dir, config_path
 
 
-def ensure_config():
+def ensure_config() -> str:
+    """
+    Ensure that the configuration directory and file exist.
+    If not create a new directory and attempt to start a configuration flow.
+    :return: Absolute path to configuration file.
+    """
     config_dir, config_path = resolve_config(DEFAULT_CONFIG_PATH)
 
     if os.path.exists(config_path):
@@ -56,7 +67,9 @@ def ensure_config():
     return config_path
 
 
-def generate_config_defaults(config_path):
+def generate_config_defaults(config_path) -> None:
+    """ Generate a default config if the user chooses to not go through an
+    initial configuration flow. """
     try:
         with open(config_path, 'w+') as f:
             json.dump(CONFIG_DEFAULTS, f)
@@ -64,7 +77,12 @@ def generate_config_defaults(config_path):
         raise
 
 
-def load_config(fp):
+def load_config(fp) -> dict:
+    """
+    Attempt to load the configuration.
+    :param fp: The file path to the config
+    :return: Configuration dictionary
+    """
     try:
         with open(fp, 'r') as f:
             config = json.load(f)
@@ -75,9 +93,9 @@ def load_config(fp):
     return config
 
 
-def do_config_flow(description, fields, fp):
+def do_config_flow(description, fields, fp) -> None:
     """
-    Execute a config flow. The config is stored at fp
+    Execute a config flow. The config is stored at fp.
     """
     if fields is None:
         fields = {}

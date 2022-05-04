@@ -11,7 +11,8 @@ setup(
     packages=find_packages(include=["libtracker", "libtracker.*"]),
     install_requires=(
         "pyicloud",
-        "requests"
+        "requests",
+        "click"
     ),
     author="Euan Mills",
     author_email="euab.mills@gmail.com"

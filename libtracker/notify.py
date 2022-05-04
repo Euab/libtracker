@@ -3,7 +3,13 @@ import requests
 from libtracker.constants import CONFIG_TELEGRAM_USERS, CONFIG_TELEGRAM_BOT_TOKEN
 
 
-def send_notification(device, config):
+def send_notification(device: str, config: dict) -> None:
+    """
+    Send an HTTP POST request to the Telegram messaging API.
+    :param device: The device name that has returned home.
+    :param config: Global configuration object.
+    :return: None
+    """
     users = [user for user in config[CONFIG_TELEGRAM_USERS]]
     token = config[CONFIG_TELEGRAM_BOT_TOKEN]
 

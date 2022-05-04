@@ -3,6 +3,9 @@ from collections import defaultdict
 
 
 class Entity(ABC):
+    """
+    Abstract base class to represent a entity inside the state machine.
+    """
     @property
     def name(self):
         return "Generic Entity"

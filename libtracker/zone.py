@@ -1,5 +1,7 @@
 import math
+from typing import Union, Tuple, Optional
 
+from libtracker import StateMachine
 from libtracker.entity import Entity
 from libtracker.constants import ATTR_LATITUDE, ATTR_LONGITUDE, ATTR_RADIUS
 
@@ -17,14 +19,63 @@ EARTH_SEMI_MAJOR_AXIS = 6378137.0
 EARTH_SEMI_MINOR_AXIS = 6356752.314245
 
 
-def setup_home_zone(sm, config):
+class Zone(Entity):
+    def __init__(self, sm: StateMachine, name: str, latitude: float,
+                 longitude: float, radius: int) -> None:
+        self.sm = sm
+        self._name = name
+        self.entity_id = name
+        self._latitude = latitude
+        self._longitude = longitude
+        self._radius = radius
+
+    @property
+    def name(self) -> str:
+        """ The name of the zone. """
+        return self._name
+
+    @property
+    def state(self) -> str:
+        """ The state of the zone. """
+        return ZONE_STATE
+
+    @property
+    def state_attrs(self) -> dict[str, Union[float, int]]:
+        """ Get state attributes. """
+        attrs = {
+            ATTR_LATITUDE: self._latitude,
+            ATTR_LONGITUDE: self._longitude,
+            ATTR_RADIUS: self._radius
+        }
+
+        return attrs
+
+
+def setup_home_zone(sm: StateMachine, config: dict) -> None:
+    """
+    Create a new home zone entity and push it onto the state machine.
+    :param sm: State machine instance
+    :param config: Libtracker configuration object
+    :return: None
+    """
     h_zone = Zone(sm, config["home_name"], config[ATTR_LATITUDE],
                   config[ATTR_LONGITUDE], DEFAULT_ZONE_RADIUS)
     h_zone.entity_id = "zone.home"
     h_zone.push_state()
 
 
-def in_zone(zone, latitude, longitude, radius=0):
+def in_zone(zone: Zone, latitude: float, longitude: float,
+            radius: int = 0) -> bool:
+    """
+    Determine if a device is inside a given zone. We do this by checking
+    if the difference between the distance from the zone and the radius
+    offset is less than the radius of the zone entity.
+    :param zone: The zone entity to check against
+    :param latitude: Latitude of device
+    :param longitude: Longitude of device
+    :param radius: Radius offset
+    :return: Boolean depending on if a device is inside a zone.
+    """
     zone_distance = inverse_vincenty(
         (float(zone.attrs[ATTR_LATITUDE]), float(zone.attrs[ATTR_LONGITUDE])),
         (float(latitude), float(longitude))
@@ -33,7 +84,8 @@ def in_zone(zone, latitude, longitude, radius=0):
     return zone_distance - radius < zone.attrs[ATTR_RADIUS]
 
 
-def inverse_vincenty(theta_1, theta_2):
+def inverse_vincenty(theta_1: Tuple[float, float],
+                     theta_2: Tuple[float, float]) -> Optional[float]:
     """
     Inverse Vincenty formula to calculate the distance between two points on an
     assumed oblate spheroid.
@@ -118,31 +170,3 @@ def inverse_vincenty(theta_1, theta_2):
     s /= 1000  # m -> km
 
     return round(s, 6)
-
-
-class Zone(Entity):
-    def __init__(self, sm, name, latitude, longitude, radius):
-        self.sm = sm
-        self._name = name
-        self.entity_id = name
-        self._latitude = latitude
-        self._longitude = longitude
-        self._radius = radius
-
-    @property
-    def name(self):
-        return self._name
-
-    @property
-    def state(self):
-        return ZONE_STATE
-
-    @property
-    def state_attrs(self):
-        attrs = {
-            ATTR_LATITUDE: self._latitude,
-            ATTR_LONGITUDE: self._longitude,
-            ATTR_RADIUS: self._radius
-        }
-
-        return attrs
