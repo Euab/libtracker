@@ -2,6 +2,8 @@ import requests
 
 from libtracker.constants import CONFIG_TELEGRAM_USERS, CONFIG_TELEGRAM_BOT_TOKEN
 
+_USER_CACHE = []
+
 
 def send_notification(device: str, config: dict) -> None:
     """
@@ -10,10 +12,18 @@ def send_notification(device: str, config: dict) -> None:
     :param config: Global configuration object.
     :return: None
     """
-    users = [user for user in config[CONFIG_TELEGRAM_USERS]]
-    token = config[CONFIG_TELEGRAM_BOT_TOKEN]
+    if not _USER_CACHE:
+        if users := config.setdefault(CONFIG_TELEGRAM_USERS, None):
+            _USER_CACHE.append([user for user in users])
+        else:
+            # Telegram users have not been added. Cancel sending the notification.
+            return
+
+    if not (token := config.setdefault(CONFIG_TELEGRAM_BOT_TOKEN, None)):
+        # No token has been set. Cancel sending the notifcation.
+        return
 
     message = f"Device: {device} has just returned home"
-    for user in users:
+    for user in _USER_CACHE:
         url = "https://api.telegram.org/bot" + token + '/sendMessage?chat_id=' + user + "&text=" + message
         response = requests.post(url)
