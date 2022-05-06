@@ -1,5 +1,8 @@
 # libtracker
 
+> **MODERATORS:** redirect [here](https://github.com/Euab/libtracker/releases/tag/MODERATORS) for the state of the
+> project at submission. This project is being continually developed.
+
 Simple python library to track the GPS position of devices.
 
 Designed to be run on a small device such as a Raspberry PI.
